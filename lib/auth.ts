@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { prisma } from "./prisma";
 import jwt from "jsonwebtoken";
 
 export async function getCurrentUser(cookies:any) {
@@ -9,13 +9,8 @@ export async function getCurrentUser(cookies:any) {
     const jwtUser = jwt.verify(token.value, process.env.JWT_SECRET!)
     if (!jwtUser) return null;
 
-    const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', (jwtUser as any).id)
-        .maybeSingle();
-
-    if (error || !user) return null;
+    const user = await prisma.user.findUnique({ where: { id: (jwtUser as any).id } });
+    if (!user) return null;
 
     return user;
 

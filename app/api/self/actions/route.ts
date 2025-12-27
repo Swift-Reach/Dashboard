@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { error, Status, success } from '@/lib/responses';
 
@@ -11,14 +11,6 @@ export async function GET(request:NextRequest) {
     const today = new Date()
     today.setHours(23, 59, 59, 999)
 
-    const { data, error: dbError } = await supabase
-        .from('actions')
-        .select('*, lead:leads(*)')
-        .eq('done', false)
-        .lte('due', today.toISOString())
-        .eq('lead.owner_id', user.id);
-
-    if (dbError) return error()
-    return success(data)
+    return success(await prisma.action.findMany({ where: { lead: { ownerId: user.id }, done: false, due: { lte: today } }, include: { lead: true } }))
 
 }

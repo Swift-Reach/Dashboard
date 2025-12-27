@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { success, error, Status } from '@/lib/responses';
 
@@ -9,15 +9,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const { id } = await params;
 
-    const { data: action, error: actionError } = await supabase
-        .from('actions')
-        .select('*, lead:leads(*)')
-        .eq('id', Number(id))
-        .maybeSingle();
+    const action = await prisma.action.findUnique({ where: { id: Number(id) }, include: { lead: true } })
 
-    if (actionError || !action) return error(Status.NOT_FOUND, "Action not found")
+    if (!action) return error(Status.NOT_FOUND, "Action not found")
 
-    if (action?.lead.owner_id != user!.id) return error(Status.FORBIDDEN, "This is not your Lead")
+    if (action?.lead.ownerId != user!.id) return error(Status.FORBIDDEN, "This is not your Lead")
     if (action.done) return error(Status.BAD_REQUEST, "This Action is already finished")
 
     const body = await request.json();
@@ -25,20 +21,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     switch (body.result) {
         case "mailbox": {
 
-            await supabase
-                .from('actions')
-                .update({
+            await prisma.action.update({
+                where: { id: action.id },
+                data: {
                     done: true,
                     note: "Mailbox"
-                })
-                .eq('id', action.id);
+                }
+            })
 
-            await supabase
-                .from('leads')
-                .update({
+            await prisma.lead.update({
+                where: { id: action.lead.id },
+                data: {
                     status: "Attempted_Contact"
-                })
-                .eq('id', action.lead.id);
+                }
+            })
 
             const newDate = new Date();
             newDate.setDate(newDate.getDate() + 2);
@@ -46,14 +42,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             if (newDate.getDay() === 6) newDate.setDate(newDate.getDate() + 2);
             newDate.setHours(0, 0, 0, 0);
 
-            await supabase
-                .from('actions')
-                .insert({
+            await prisma.action.create({
+                data: {
                     type: 'Call',
-                    due: newDate.toISOString(),
-                    lead_id: action.lead.id,
+                    due: newDate,
+                    leadId: action.lead.id,
                     priority: "Low"
-                });
+                }
+            })
 
             break;
         }
