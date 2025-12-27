@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { success } from "@/lib/responses"
+import { supabase } from '@/lib/supabase';
+import { error, success } from "@/lib/responses"
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return success(await prisma.action.findUnique({ where: { id: Number(id) }, include: { lead: true } }))
+  const { data, error: dbError } = await supabase
+    .from('actions')
+    .select('*, lead:leads(*)')
+    .eq('id', Number(id))
+    .maybeSingle();
+  if (dbError) return error();
+  return success(data);
 }

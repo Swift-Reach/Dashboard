@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import { success, error, Status } from "@/lib/responses"
 
-export const GET = async () => success(await prisma.user.findMany({ select: { id: true, email: true, name: true } }));
+export const GET = async () => {
+  const { data, error: dbError } = await supabase
+    .from('users')
+    .select('id, email, name');
+  if (dbError) return error();
+  return success(data);
+};
 
 export async function POST(request: NextRequest) {
 
@@ -17,6 +23,13 @@ export async function POST(request: NextRequest) {
   const password = body.password;
   if (!password) return error(Status.BAD_REQUEST, "You need to provide a password.")
 
-  return success(await prisma.user.create({ data: { email: email, name: name, password: password }, select: { id: true, email: true, name: true } }), Status.CREATED)
+  const { data, error: dbError } = await supabase
+    .from('users')
+    .insert({ email, name, password })
+    .select('id, email, name')
+    .single();
+
+  if (dbError) return error(Status.BAD_REQUEST, "Failed to create user.");
+  return success(data, Status.CREATED)
 
 }

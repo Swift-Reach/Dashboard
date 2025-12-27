@@ -1,9 +1,14 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { success } from "@/lib/responses"
+import { supabase } from '@/lib/supabase';
+import { error, success } from "@/lib/responses"
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request:NextRequest) {
   const user = await getCurrentUser(request.cookies)
-  return success(await prisma.lead.findMany({ where: { ownerId: user!.id } }))
+  const { data, error: dbError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('owner_id', user!.id);
+  if (dbError) return error();
+  return success(data);
 }

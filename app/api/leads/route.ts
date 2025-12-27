@@ -1,16 +1,24 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { PrismaClientValidationError } from '@prisma/client/runtime/react-native.js';
+import { supabase } from '@/lib/supabase';
 import { error, Status, success } from '@/lib/responses';
 
-export const GET = async () => success(await prisma.lead.findMany())
+export const GET = async () => {
+  const { data, error: dbError } = await supabase.from('leads').select('*');
+  if (dbError) return error();
+  return success(data);
+}
 
 export async function POST (request:NextRequest) {
   try {
     const body = await request.json();
-    return success(await prisma.lead.create({ data: { ...body }, select: { id: true }}), Status.CREATED)
+    const { data, error: dbError } = await supabase
+      .from('leads')
+      .insert(body)
+      .select('id')
+      .single();
+    if (dbError) return error(Status.BAD_REQUEST, "Invalid lead data");
+    return success(data, Status.CREATED)
   } catch (e) {
-    if (e instanceof PrismaClientValidationError) return error(Status.BAD_REQUEST, "Invalid lead data");
     console.error(e);
     return error()
   }
