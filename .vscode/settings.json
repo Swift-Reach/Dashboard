@@ -7,11 +7,13 @@
         "**/Thumbs.db": true,
         ".vscode": true,
         ".next": true,
-        "node_modules": true
+        "node_modules": true,
+        "package-lock.json": true
     },
     "hide-files.files": [
         ".vscode",
         ".next",
-        "node_modules"
+        "node_modules",
+        "package-lock.json"
     ]
 }
