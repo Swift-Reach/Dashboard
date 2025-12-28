@@ -106,28 +106,16 @@ export function Sidebar() {
 
       <div className="px-4 pb-6 space-y-3">
         {streak && (
-          <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-3 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-700">Daily Streak</span>
-              <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-500 rounded-lg">
-                <Flame className="h-2.5 w-2.5 text-white" />
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-2 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-500 rounded-lg">
+                  <Flame className="h-3 w-3 text-white" />
+                </div>
+                <span className="text-lg font-bold text-gray-900">{streak.current}</span>
+                <span className="text-xs text-gray-500">days</span>
               </div>
-            </div>
-            <div className="flex items-baseline space-x-1.5 mb-2">
-              <span className="text-3xl font-bold text-gray-900">
-                {streak.current}
-              </span>
-              <span className="text-sm text-gray-500 font-medium">days</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 font-medium">
-                Best: <span className="font-bold text-gray-900">{streak.best}</span>
-              </span>
-              {streak.current > 0 && (
-                <span className="text-orange-600 font-bold text-xs">
-                  Keep going!
-                </span>
-              )}
+              <span className="text-xs text-gray-600">Best: <span className="font-bold">{streak.best}</span></span>
             </div>
           </div>
         )}
