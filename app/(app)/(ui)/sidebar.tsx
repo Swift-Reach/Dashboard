@@ -5,7 +5,47 @@ import { getRankInfo } from '@/lib/ranks';
 import { Home, LogOut, CircleAlert, Flame, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+function useAnimatedNumber(value: number, duration = 800) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const rafRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef<number | undefined>(undefined);
+  const startValueRef = useRef(value);
+
+  useEffect(() => {
+    if (value === displayValue) return;
+
+    startValueRef.current = displayValue;
+    startTimeRef.current = Date.now();
+
+    const animate = () => {
+      const now = Date.now();
+      const elapsed = now - (startTimeRef.current || now);
+      const progress = Math.min(elapsed / duration, 1);
+
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.round(startValueRef.current + (value - startValueRef.current) * easeOutQuart);
+
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, duration]);
+
+  return displayValue;
+}
 
 export function Sidebar() {
 
@@ -26,6 +66,9 @@ export function Sidebar() {
       streakStart: string | null;
       best: number;
     } | null>(null);
+    const [updateKey, setUpdateKey] = useState(0);
+
+    const animatedScore = useAnimatedNumber(stats?.score || 0);
 
     useEffect(() => {
       (async ()=>{
@@ -37,6 +80,7 @@ export function Sidebar() {
         const res = await api.get("/self/stats")
         if (res.status == 200) {
           setStats(res.data);
+          setUpdateKey(prev => prev + 1);
         }
       })();
 
@@ -122,27 +166,40 @@ export function Sidebar() {
         )}
 
         {levelStats && stats && (
-          <div className={`bg-gradient-to-br ${getRankInfo(levelStats.level).gradient} rounded-2xl shadow-md border ${getRankInfo(levelStats.level).borderColor} p-5 hover:shadow-lg transition-shadow duration-200`}>
+          <div
+            key={updateKey}
+            className={`bg-gradient-to-br ${getRankInfo(levelStats.level).gradient} rounded-2xl shadow-md border ${getRankInfo(levelStats.level).borderColor} p-5 hover:shadow-lg transition-all duration-300 animate-in fade-in-0 zoom-in-95`}
+          >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-gray-700">Rank</span>
-              <div className={`p-1 bg-gradient-to-br ${getRankInfo(levelStats.level).color} rounded-lg`}>
+              <div className={`p-1 bg-gradient-to-br ${getRankInfo(levelStats.level).color} rounded-lg animate-in zoom-in-0 spin-in-180 duration-500`}>
                 <Star className="h-3 w-3 text-white fill-white" />
               </div>
             </div>
             <div className="mb-3">
-              <div className={`inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br ${getRankInfo(levelStats.level).color} shadow-md mb-2`}>
-                <div className="flex items-center space-x-1 mr-2">
+              <div className={`inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br ${getRankInfo(levelStats.level).color} shadow-md mb-2 animate-in slide-in-from-left-2 duration-500 relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out]" style={{
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 2s ease-in-out'
+                }} />
+                <div className="flex items-center space-x-1 mr-2 relative z-10">
                   {Array.from({ length: getRankInfo(levelStats.level).stars }).map((_, i) => (
-                    <Star key={i} className="h-2.5 w-2.5 text-white fill-white" />
+                    <Star
+                      key={i}
+                      className="h-2.5 w-2.5 text-white fill-white animate-in zoom-in-0 duration-300"
+                      style={{
+                        animationDelay: `${i * 100}ms`
+                      }}
+                    />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                <span className="text-xs font-bold text-white uppercase tracking-wider relative z-10">
                   {getRankInfo(levelStats.level).name}
                 </span>
               </div>
               <div className="flex items-baseline space-x-2">
-                <span className="text-5xl font-bold text-gray-900">
-                  {stats.score}
+                <span className="text-5xl font-bold text-gray-900 tabular-nums animate-in fade-in-0 zoom-in-90 duration-500">
+                  {animatedScore}
                 </span>
                 <span className="text-xl text-gray-500 font-medium">pts</span>
               </div>
@@ -150,14 +207,18 @@ export function Sidebar() {
             <div className="space-y-2">
               <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r ${getRankInfo(levelStats.level).color} rounded-full transition-all duration-500 ease-out shadow-sm`}
+                  className={`absolute inset-0 bg-gradient-to-r ${getRankInfo(levelStats.level).color} rounded-full transition-all duration-700 ease-out shadow-sm`}
                   style={{
                     width: `${Math.min(100, ((stats.score - levelStats.currentLevelPoints) / (levelStats.nextLevelPoints - levelStats.currentLevelPoints)) * 100)}%`
                   }}
-                />
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1.5s_ease-in-out_infinite]" style={{
+                    backgroundSize: '200% 100%',
+                  }} />
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600 font-medium">
+              <div className="flex items-center justify-between text-xs animate-in slide-in-from-bottom-1 duration-500">
+                <span className="text-gray-600 font-medium tabular-nums">
                   {stats.score - levelStats.currentLevelPoints} / {levelStats.nextLevelPoints - levelStats.currentLevelPoints}
                 </span>
                 <span className={`font-bold bg-gradient-to-r ${getRankInfo(levelStats.level).color} bg-clip-text text-transparent`}>
