@@ -4,12 +4,13 @@ import { api } from '@/lib/api';
 import { getRankInfo } from '@/lib/ranks';
 import { Home, LogOut, CircleAlert, Flame, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export function Sidebar() {
 
     const router = useRouter();
+    const pathname = usePathname();
 
     const [actions, setActions] = useState(false);
     const [stats, setStats] = useState<{
@@ -52,7 +53,7 @@ export function Sidebar() {
           setStreak(res.data);
         }
       })();
-    }, []);
+    }, [pathname]);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', description: 'Overview & Statistics', color: 'from-teal-600 to-teal-500' },
