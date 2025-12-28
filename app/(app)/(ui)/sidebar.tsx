@@ -1,7 +1,8 @@
 'use client';
 
 import { api } from '@/lib/api';
-import { Home, LogOut, CircleAlert, Flame } from 'lucide-react';
+import { getRankInfo } from '@/lib/ranks';
+import { Home, LogOut, CircleAlert, Flame, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,11 @@ export function Sidebar() {
     const [actions, setActions] = useState(false);
     const [stats, setStats] = useState<{
       score: number;
+    } | null>(null);
+    const [levelStats, setLevelStats] = useState<{
+      level: number;
+      currentLevelPoints: number;
+      nextLevelPoints: number;
     } | null>(null);
     const [streak, setStreak] = useState<{
       current: number;
@@ -30,6 +36,13 @@ export function Sidebar() {
         const res = await api.get("/self/stats")
         if (res.status == 200) {
           setStats(res.data);
+        }
+      })();
+
+      (async ()=>{
+        const res = await api.get("/self/stats/level")
+        if (res.status == 200) {
+          setLevelStats(res.data);
         }
       })();
 
@@ -92,25 +105,52 @@ export function Sidebar() {
       </nav>
 
       <div className="px-4 pb-6 space-y-3">
-        {/* {stats && (
-          <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-200">
+        {levelStats && stats && (
+          <div className={`bg-gradient-to-br ${getRankInfo(levelStats.level).gradient} rounded-2xl shadow-md border ${getRankInfo(levelStats.level).borderColor} p-5 hover:shadow-lg transition-shadow duration-200`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-700">Productivity Score</span>
+              <span className="text-sm font-semibold text-gray-700">Military Rank</span>
+              <div className={`p-1 bg-gradient-to-br ${getRankInfo(levelStats.level).color} rounded-lg`}>
+                <Star className="h-3 w-3 text-white fill-white" />
+              </div>
             </div>
-            <div className="flex items-baseline space-x-2 mb-3">
-              <span className="text-5xl font-bold text-gray-900">
-                {stats.score}
-              </span>
-              <span className="text-xl text-gray-500 font-medium">/100</span>
+            <div className="mb-3">
+              <div className={`inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br ${getRankInfo(levelStats.level).color} shadow-md mb-2`}>
+                <div className="flex items-center space-x-1 mr-2">
+                  {Array.from({ length: getRankInfo(levelStats.level).stars }).map((_, i) => (
+                    <Star key={i} className="h-2.5 w-2.5 text-white fill-white" />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  {getRankInfo(levelStats.level).name}
+                </span>
+              </div>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-5xl font-bold text-gray-900">
+                  {stats.score}
+                </span>
+                <span className="text-xl text-gray-500 font-medium">pts</span>
+              </div>
             </div>
-            <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-teal-600 to-teal-500 rounded-full transition-all duration-500 ease-out shadow-sm"
-                style={{ width: `${stats.score}%` }}
-              />
+            <div className="space-y-2">
+              <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                <div
+                  className={`absolute inset-0 bg-gradient-to-r ${getRankInfo(levelStats.level).color} rounded-full transition-all duration-500 ease-out shadow-sm`}
+                  style={{
+                    width: `${Math.min(100, ((stats.score - levelStats.currentLevelPoints) / (levelStats.nextLevelPoints - levelStats.currentLevelPoints)) * 100)}%`
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600 font-medium">
+                  {stats.score - levelStats.currentLevelPoints} / {levelStats.nextLevelPoints - levelStats.currentLevelPoints}
+                </span>
+                <span className={`font-bold bg-gradient-to-r ${getRankInfo(levelStats.level).color} bg-clip-text text-transparent`}>
+                  Level {levelStats.level}
+                </span>
+              </div>
             </div>
           </div>
-        )} */}
+        )}
 
         {streak && (
           <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-200">
