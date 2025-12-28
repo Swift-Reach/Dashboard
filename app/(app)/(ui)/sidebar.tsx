@@ -105,10 +105,37 @@ export function Sidebar() {
       </nav>
 
       <div className="px-4 pb-6 space-y-3">
+        {streak && (
+          <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-700">Daily Streak</span>
+              <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-500 rounded-lg">
+                <Flame className="h-3 w-3 text-white" />
+              </div>
+            </div>
+            <div className="flex items-baseline space-x-2 mb-3">
+              <span className="text-5xl font-bold text-gray-900">
+                {streak.current}
+              </span>
+              <span className="text-xl text-gray-500 font-medium">days</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-600 font-medium">
+                Best: <span className="font-bold text-gray-900">{streak.best}</span> days
+              </span>
+              {streak.current > 0 && (
+                <span className="text-orange-600 font-bold">
+                  Keep going!
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {levelStats && stats && (
           <div className={`bg-gradient-to-br ${getRankInfo(levelStats.level).gradient} rounded-2xl shadow-md border ${getRankInfo(levelStats.level).borderColor} p-5 hover:shadow-lg transition-shadow duration-200`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-700">Military Rank</span>
+              <span className="text-sm font-semibold text-gray-700">Rank</span>
               <div className={`p-1 bg-gradient-to-br ${getRankInfo(levelStats.level).color} rounded-lg`}>
                 <Star className="h-3 w-3 text-white fill-white" />
               </div>
@@ -148,33 +175,6 @@ export function Sidebar() {
                   Level {levelStats.level}
                 </span>
               </div>
-            </div>
-          </div>
-        )}
-
-        {streak && (
-          <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-700">Daily Streak</span>
-              <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-500 rounded-lg">
-                <Flame className="h-3 w-3 text-white" />
-              </div>
-            </div>
-            <div className="flex items-baseline space-x-2 mb-3">
-              <span className="text-5xl font-bold text-gray-900">
-                {streak.current}
-              </span>
-              <span className="text-xl text-gray-500 font-medium">days</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 font-medium">
-                Best: <span className="font-bold text-gray-900">{streak.best}</span> days
-              </span>
-              {streak.current > 0 && (
-                <span className="text-orange-600 font-bold">
-                  Keep going!
-                </span>
-              )}
             </div>
           </div>
         )}
