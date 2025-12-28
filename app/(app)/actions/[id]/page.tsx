@@ -1,34 +1,22 @@
 'use client';
 
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { AxiosError } from "axios";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card } from "../../(components)/Card";
-import { Badge } from "../../(components)/Badge";
-import { priorityColors, statusColors, typeIcons } from "@/lib/static";
-import { Building, Car, GoalIcon, Mail, Phone } from "lucide-react";
-import { CallWizard } from "./(components)/CallWizard";
+import { typeIcons } from "@/lib/static";
+import { Building, Mail, Phone, User, Clock, ArrowLeft, Sparkles } from "lucide-react";
+import { CallWizard } from "./(call_wizard)";
+import Link from "next/link";
 
 export default function ActionPage() {
-
     const { id } = useParams();
 
     const [action, setAction] = useState<Action | null>(null);
     const [actions, setActions] = useState<Action[] | null>([]);
     const [self, setSelf] = useState<User | null>(null);
-
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -40,168 +28,244 @@ export default function ActionPage() {
                 setActions(await api.get(`/leads/${action?.lead.id}/actions`).then(res => res.data));
                 setLoading(false);
             } catch (e) {
-                if (e instanceof AxiosError) setError(e.response?.data?.error);
-                else {
-                    setError("An unknown error occurred!");
-                    console.error("Failed to fetch next action", e);
+                if (!(e instanceof AxiosError)) {
+                    console.error("Failed to fetch action", e);
                 }
             }
-
         })();
     }, [id]);
 
-    return <div className="my-8 mx-16">
-        <div className="pb-8">{
-            loading
-                ? <Skeleton className="h-6 w-64 bg-black/5 dark:bg-accent" />
-                : <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/actions">Actions</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href={`/actions/${id}`}>{action?.lead?.name || id}</BreadcrumbLink>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-        }</div>
-        {loading || !action
-            ? <></>
-            : <div className="w-full h-full">
-                <div className="flex items-center space-x-6 mb-4">
-                    <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-1">
-                            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                {action.lead.name}
-                            </h1>
-                            <Badge color={statusColors[action.lead.status!]} size="md">
-                                {action.lead.status.replace('_', ' ')}
-                            </Badge>
+    if (loading || !action) {
+        return (
+            <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 p-8">
+                <div className="max-w-7xl mx-auto space-y-6">
+                    <Skeleton className="h-12 w-64 bg-white/50 rounded-2xl" />
+                    <Skeleton className="h-96 w-full bg-white/50 rounded-3xl" />
+                </div>
+            </div>
+        );
+    }
+
+    const points = (action.type === 'Call' ? 5 : action.type === 'Email' ? 3 : 0) *
+                   (action.priority === 'High' ? 2 : action.priority === "Medium" ? 1.5 : 1);
+
+    const completedActions = actions?.filter(a => a.done && a.id !== action.id) || [];
+    const showScript = ["New", "Attempted_Contact"].includes(action?.lead.status);
+
+    return (
+        <div className="min-h-screen bg-linear-to-br from-gray-50 via-blue-50 to-indigo-50 p-8">
+            <div className="mx-52">
+                <Link
+                    href="/actions"
+                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group mb-6"
+                >
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    <span className="font-medium">Back to Actions</span>
+                </Link>
+
+                <div className="bg-linear-to-br from-white to-blue-50 rounded-3xl shadow-xl border border-blue-100 p-8 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-4xl font-bold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                    {action.lead.name}
+                                </h1>
+                                <span className="px-4 py-1.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold rounded-full shadow-md">
+                                    {action.lead.status.replace('_', ' ')}
+                                </span>
+                            </div>
+                            <p className="text-xl text-gray-600 font-medium">{action.lead.company}</p>
+                            <div className="flex items-center gap-2 mt-4">
+                                <Clock className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm text-gray-600">
+                                    Due {new Date(action.due).toLocaleDateString('de-DE', {
+                                        weekday: 'short',
+                                        day: 'numeric',
+                                        month: 'short',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </span>
+                            </div>
                         </div>
-                        <p className="text-lg text-gray-500 dark:text-gray-400">{action.lead.company}</p>
-                    </div>
-                    <div className="text-right px-6 py-4 bg-gray-100 dark:bg-gray-900 rounded-2xl">
-                        <div className="text-5xl font-bold text-gray-900 dark:text-gray-100">
-                            {(action.type === 'Call' ? 5 : action.type === 'Email' ? 3 : 0) * (action.priority == 'High' ? 2 : action.priority == "Medium" ? 1.5 : 1)}
+
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-linear-to-br from-yellow-400 to-orange-500 blur-2xl opacity-20 rounded-3xl"></div>
+                            <div className="relative bg-linear-to-br from-yellow-400 to-orange-500 rounded-2xl p-6 shadow-lg min-w-35">
+                                <div className="text-center">
+                                    <Sparkles className="w-6 h-6 text-white mx-auto mb-2" />
+                                    <div className="text-4xl font-bold text-white">
+                                        {points}
+                                    </div>
+                                    <div className="text-xs text-white/90 uppercase tracking-wider font-semibold mt-1">
+                                        Points
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Points</div>
                     </div>
                 </div>
-                <div className="flex flex-row w-full h-full justify-between space-x-8">
-                    <div className="w-1/2">
-                        <Card className="p-8 mb-8 border-2 border-gray-200 dark:border-gray-800 sticky top-6">
-                            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="space-y-8">
+                        <div className="bg-linear-to-br from-white to-gray-50 rounded-3xl shadow-lg border border-gray-200 p-8 animate-in fade-in slide-in-from-left duration-500">
+                            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                <div className="w-1 h-4 bg-linear-to-b from-blue-500 to-cyan-500 rounded-full"></div>
                                 Contact Information
                             </h2>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="flex items-center">
-                                    <div className="p-3 mr-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                                        <Phone className="h-5 w-5 text-gray-900 dark:text-gray-100" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Phone</div>
-                                        <div className="font-semibold text-gray-900 dark:text-gray-100">{action.lead.number}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <div className="p-3 mr-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                                        <Mail className="h-5 w-5 text-gray-900 dark:text-gray-100" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</div>
-                                        <div className="font-semibold text-gray-900 dark:text-gray-100">{action.lead.email}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <div className="p-3 mr-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                                        <GoalIcon className="h-5 w-5 text-gray-900 dark:text-gray-100" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Position</div>
-                                        <div className="font-semibold text-gray-900 dark:text-gray-100">{action.lead.position || "/"}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <div className="p-3 mr-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                                        <Building className="h-5 w-5 text-gray-900 dark:text-gray-100" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Company</div>
-                                        <div className="font-semibold text-gray-900 dark:text-gray-100">{action.lead.company || "/"}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                        {
-                            actions && actions.length > 1 &&
-                            <Card className="p-8 border-2 border-gray-200 dark:border-gray-800">
-                                <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                                    Context
-                                </h2>
-                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg space-y-4">
-                                    {actions.filter(a => a.done).map(a => {
-
-                                        const Icon = typeIcons[a.type];
-
-                                        return <div className="flex" key={a.id}>
-                                            <Badge color={a.done ? "bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-300" : "gray"} size="md">
-                                                <Icon className="m-1 inline h-5 w-5 mr-2 text-gray-900 dark:text-gray-100" />
-                                                {new Date(a.due).toLocaleDateString()}
-                                            </Badge>
-                                            {a.note && <p className="ml-2 flex flex-col justify-center text-lg">{a.note}</p>}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-linear-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-100 hover:shadow-md transition-all duration-200 hover:scale-105">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-linear-to-br from-blue-500 to-cyan-500 rounded-xl shadow-md">
+                                            <Phone className="h-5 w-5 text-white" />
                                         </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-500 font-semibold mb-1">Phone</div>
+                                            <div className="font-bold text-gray-900 truncate">{action.lead.number}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100 hover:shadow-md transition-all duration-200 hover:scale-105">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl shadow-md">
+                                            <Mail className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-500 font-semibold mb-1">Email</div>
+                                            <div className="font-bold text-gray-900 truncate text-sm">{action.lead.email}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100 hover:shadow-md transition-all duration-200 hover:scale-105">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-linear-to-br from-emerald-500 to-teal-500 rounded-xl shadow-md">
+                                            <User className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-500 font-semibold mb-1">Position</div>
+                                            <div className="font-bold text-gray-900 truncate">{action.lead.position || "Not specified"}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-linear-to-br from-orange-50 to-rose-50 rounded-2xl p-4 border border-orange-100 hover:shadow-md transition-all duration-200 hover:scale-105">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-linear-to-br from-orange-500 to-rose-500 rounded-xl shadow-md">
+                                            <Building className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-500 font-semibold mb-1">Company</div>
+                                            <div className="font-bold text-gray-900 truncate">{action.lead.company || "Not specified"}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {completedActions.length > 0 && (
+                            <div className="bg-linear-to-br from-white to-indigo-50 rounded-3xl shadow-lg border border-indigo-100 p-8 animate-in fade-in slide-in-from-left duration-700">
+                                <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <div className="w-1 h-4 bg-linear-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                                    History
+                                </h2>
+                                <div className="space-y-3">
+                                    {completedActions.map(a => {
+                                        const Icon = typeIcons[a.type];
+                                        return (
+                                            <div
+                                                key={a.id}
+                                                className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-md transition-all duration-200"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-linear-to-br from-indigo-500 to-purple-500 rounded-lg shadow-sm">
+                                                        <Icon className="h-4 w-4 text-white" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {new Date(a.due).toLocaleDateString('de-DE', {
+                                                                weekday: 'short',
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })}
+                                                        </div>
+                                                        {a.note && (
+                                                            <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                                                                {a.note}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
                                     })}
-                                </p>
-                            </Card>
-                        }
+                                </div>
+                            </div>
+                        )}
+
+                        {showScript && (
+                            <div className="bg-linear-to-br from-white to-purple-50 rounded-3xl shadow-lg border border-purple-100 p-8 animate-in fade-in slide-in-from-left duration-1000">
+                                <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <div className="w-1 h-4 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                                    Call Script
+                                </h2>
+                                <div className="space-y-4 text-gray-700">
+                                    <div className="bg-white rounded-2xl p-5 border border-purple-100">
+                                        <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Opening</div>
+                                        <p className="leading-relaxed">
+                                            {self?.name} hier<br />
+                                            <br />
+                                            Ich will ehrlich sein: Das ist ein Akquiseanruf.<br />
+                                            Wollen Sie gleich auflegen oder hab ich 20 Sekunden?
+                                        </p>
+                                    </div>
+                                    <div className="bg-white rounded-2xl p-5 border border-purple-100">
+                                        <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Introduction</div>
+                                        <p className="leading-relaxed">
+                                            Ich spreche häufig mit Unternehmern aus der [BRANCHE] wie Ihnen.<br />
+                                            Die haben oft das Problem, dass sie nur zufällig Kaufanfragen bekommen, weil Sie von Empfehlungen abhängig sind.
+                                        </p>
+                                    </div>
+                                    <div className="bg-white rounded-2xl p-5 border border-purple-100">
+                                        <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Value Proposition</div>
+                                        <p className="leading-relaxed">
+                                            Da wollte ich fragen, ob es sich für Sie interessant anhört, wenn wir zusammen ein System aufsetzen,
+                                            dass die Interessenten eben genau im Moment abholt, in dem Sie überlegen zu kaufen und die Anfrage vorqualifiziert.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    {
-                        action.type == "Call" && <Card className="p-8 h-min border-2 w-full border-gray-200 dark:border-gray-800">
-                            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                                Call
-                            </h2>
-                            <CallWizard action={action} />
-                        </Card>
-                    }
-                    {
-                        action.type == "Email" && <Card className="p-8 h-min border-2 w-full border-gray-200 dark:border-gray-800">
-                            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                                Mail
-                            </h2>
-                            <div>
 
+                    <div className="animate-in fade-in slide-in-from-right duration-500">
+                        {action.type === "Call" && (
+                            <div className="bg-linear-to-br from-white to-blue-50 rounded-3xl shadow-lg border border-blue-100 p-8">
+                                <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <div className="w-1 h-4 bg-linear-to-b from-blue-500 to-cyan-500 rounded-full"></div>
+                                    Complete Call
+                                </h2>
+                                <CallWizard action={action} />
                             </div>
-                        </Card>
-                    }
-                    {["New", "Attempted_Contact"].includes(action?.lead.status) &&
-                        <Card className="w-1/2 h-min p-8 border-2 border-gray-200 dark:border-gray-800 sticky top-6 max-w-4xl">
-                            <h2 className="text-xl font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">
-                                Script
-                            </h2>
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <pre className="whitespace-pre-wrap text-lg text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                        )}
 
-                                    {self?.name} hier  <br />
-                                    <br />
-                                    **Hook:** <br />
-                                    Ich will ehrlich sein: Das ist ein Akquiseanruf. <br />
-                                    Wollen Sie gleich auflegen oder hab ich 20 Sekunden?  <br />
-                                    <br />
-                                    **Intro:** <br />
-                                    Ich spreche häufig mit Unternehmern aus der [BRANCHE] wie Ihnen.  <br />
-                                    Die haben oft das Problem, dass sie nur zufällig Kaufanfragen bekommen, weil Sie von Empfehlungen abhängig sind.  <br />
-                                    <br />
-                                    **Pitch:** <br />
-                                    Da wollte ich fragen, ob es sich für Sie interessant anhört, wenn wir zusammen ein System aufsetzen, dass die Interessenten eben genau im Moment abholt, in dem Sie überlegen zu kaufen und die Anfrage vorqualifiziert.  <br />
-                                    <br />
-                                    **Next Steps:**<br />
-                                    - Interested: Schedule demo/meeting<br />
-                                    - Not Interested: Thank and end call politely
-                                </pre>
+                        {action.type === "Email" && (
+                            <div className="bg-linear-to-br from-white to-purple-50 rounded-3xl shadow-lg border border-purple-100 p-8">
+                                <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <div className="w-1 h-4 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                                    Send Email
+                                </h2>
+                                <div className="text-center py-12">
+                                    <Mail className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                    <p className="text-gray-500">Email workflow coming soon</p>
+                                </div>
                             </div>
-                        </Card>}
-                </div></div>}
-    </div>;
-
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
