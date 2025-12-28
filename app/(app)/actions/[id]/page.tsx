@@ -46,8 +46,7 @@ export default function ActionPage() {
         );
     }
 
-    const points = (action.type === 'Call' ? 5 : action.type === 'Email' ? 3 : 0) *
-                   (action.priority === 'High' ? 2 : action.priority === "Medium" ? 1.5 : 1);
+    const points = {'Appointment': 10, 'Call': 5, 'Email': 3}[action.type] * {'High': 5, 'Medium': 2, 'Low': 1}[action.priority]
 
     const completedActions = actions?.filter(a => a.done && a.id !== action.id) || [];
     const showScript = ["New", "Attempted_Contact"].includes(action?.lead.status);

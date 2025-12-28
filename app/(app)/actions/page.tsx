@@ -96,7 +96,7 @@ export default function ActionQueue() {
                                 </div>
                             </div>
                             <p className="text-gray-600 text-lg font-medium">
-                                Complete actions, earn points, level up! 🚀
+                                Complete Actions, Level Up, Earn Money.
                             </p>
                         </div>
 
