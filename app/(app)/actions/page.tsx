@@ -84,14 +84,14 @@ export default function ActionQueue() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-6 animate-in fade-in slide-in-from-top duration-500">
+                <div className="mb-6 opacity-0 animate-fade-in-down">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
                                     Action Queue
                                 </h1>
-                                <div className="px-4 py-1.5 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-sm font-semibold rounded-full shadow-md animate-pulse">
+                                <div className="px-4 py-1.5 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-sm font-semibold rounded-full shadow-md">
                                     {actions.length}
                                 </div>
                             </div>
@@ -103,12 +103,11 @@ export default function ActionQueue() {
                         <button
                             onClick={handleNextAction}
                             disabled={loading || !hasAvailableActions}
-                            className="group relative bg-gradient-to-br from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-200 overflow-hidden disabled:cursor-not-allowed disabled:opacity-60 hover:scale-105"
+                            className="group relative bg-gradient-to-br from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden disabled:cursor-not-allowed disabled:opacity-60 transform hover:-translate-y-0.5 active:translate-y-0"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             <div className="relative px-6 py-4 flex items-center gap-3">
-                                <Sparkles className="w-5 h-5" />
+                                <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
                                 <span className="font-bold">
                                     {loading ? 'Loading...' : 'Start Next Action'}
                                 </span>
@@ -122,7 +121,7 @@ export default function ActionQueue() {
                 {!loading && <DailyProgress earnedScore={todayScore} /> }
 
                 {error && (
-                    <div className="bg-gradient-to-r from-red-50 to-white border border-red-300 rounded-2xl p-5 mb-6 shadow-md animate-in fade-in slide-in-from-top duration-300">
+                    <div className="bg-gradient-to-r from-red-50 to-white border border-red-300 rounded-2xl p-5 mb-6 shadow-md opacity-0 animate-fade-in-down">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-gradient-to-br from-red-600 to-red-500 rounded-lg">
                                 <TriangleAlert className="w-5 h-5 text-white" />
@@ -137,14 +136,17 @@ export default function ActionQueue() {
                         {[1, 2, 3, 4, 5].map(i => (
                             <div
                                 key={i}
-                                className="bg-white rounded-3xl h-32 animate-pulse border border-gray-200 shadow-sm"
-                            />
+                                className="bg-white rounded-3xl h-32 border border-gray-200 shadow-sm overflow-hidden relative opacity-0 animate-fade-in"
+                                style={{ animationDelay: `${i * 100}ms` }}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100 to-transparent animate-shimmer-loading"></div>
+                            </div>
                         ))}
                     </div>
                 ) : actions.length === 0 ? (
-                    <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl shadow-xl border-2 border-green-200 p-16 text-center animate-in fade-in zoom-in duration-500">
+                    <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl shadow-xl border-2 border-green-200 p-16 text-center opacity-0 animate-fade-in-up">
                         <div className="max-w-md mx-auto">
-                            <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-green-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-bounce">
+                            <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-green-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-bounce-slow">
                                 <ListChecks className="w-12 h-12 text-white" />
                             </div>
                             <h2 className="text-3xl font-bold text-gray-900 mb-3">All Caught Up!</h2>
@@ -169,8 +171,8 @@ export default function ActionQueue() {
                             {actions.map((action, index) => (
                                 <div
                                     key={action.id}
-                                    className="animate-in fade-in slide-in-from-bottom duration-500"
-                                    style={{ animationDelay: `${index * 50}ms` }}
+                                    className="opacity-0 animate-fade-in-up"
+                                    style={{ animationDelay: `${index * 75}ms` }}
                                 >
                                     <ActionCard action={action} />
                                 </div>

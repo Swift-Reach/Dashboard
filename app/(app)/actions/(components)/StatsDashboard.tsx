@@ -62,7 +62,7 @@ export function StatsDashboard() {
         <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                <div className="bg-gradient-to-br from-white to-teal-50 rounded-2xl shadow-md border border-teal-200 p-6 hover:shadow-lg transition-all duration-200 hover:scale-105 animate-in fade-in zoom-in duration-500">
+                <div className="bg-gradient-to-br from-white to-teal-50 rounded-2xl shadow-md border border-teal-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0 animate-fade-in-up">
                     <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-gradient-to-br from-teal-600 to-teal-500 rounded-xl shadow-md">
                             <TrendingUp className="w-6 h-6 text-white" />
@@ -76,7 +76,7 @@ export function StatsDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-md border border-blue-200 p-6 hover:shadow-lg transition-all duration-200 hover:scale-105 animate-in fade-in zoom-in duration-500" style={{ animationDelay: '100ms' }}>
+                <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-md border border-blue-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                     <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl shadow-md">
                             <ListChecks className="w-6 h-6 text-white" />
@@ -90,7 +90,7 @@ export function StatsDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-md border border-orange-200 p-6 hover:shadow-lg transition-all duration-200 hover:scale-105 animate-in fade-in zoom-in duration-500" style={{ animationDelay: '200ms' }}>
+                <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-md border border-orange-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-gradient-to-br from-orange-600 to-orange-500 rounded-xl shadow-md">
                             <Target className="w-6 h-6 text-white" />
@@ -104,7 +104,7 @@ export function StatsDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl shadow-md border border-emerald-200 p-6 hover:shadow-lg transition-all duration-200 hover:scale-105 animate-in fade-in zoom-in duration-500" style={{ animationDelay: '300ms' }}>
+                <div className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl shadow-md border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                     <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-xl shadow-md">
                             <Euro className="w-6 h-6 text-white" />

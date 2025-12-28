@@ -30,12 +30,12 @@ export function ActionCard({ action }: { action: Action }) {
     return (
         <div
             onClick={() => router.push(`/actions/${action.id}`)}
-            className={`group relative bg-gradient-to-br ${priorityBackgrounds[action.priority]} rounded-3xl shadow-md border hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02] overflow-hidden`}
+            className={`group relative bg-gradient-to-br ${priorityBackgrounds[action.priority]} rounded-3xl shadow-md border hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1 overflow-hidden`}
         >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative p-6">
                 <div className="flex items-center gap-6">
-                    <div className={`p-4 bg-gradient-to-br ${typeColors[action.type]} rounded-2xl shadow-md group-hover:scale-110 transition-transform duration-200`}>
+                    <div className={`p-4 bg-gradient-to-br ${typeColors[action.type]} rounded-2xl shadow-md group-hover:scale-110 transition-transform duration-300`}>
                         <Icon className="h-8 w-8 text-white" />
                     </div>
 
@@ -80,9 +80,9 @@ export function ActionCard({ action }: { action: Action }) {
 
                         <div className="relative">
                             <div className={`absolute inset-0 bg-gradient-to-br ${priorityGradients[action.priority]} blur-xl opacity-20 rounded-2xl`}></div>
-                            <div className={`relative bg-gradient-to-br ${priorityGradients[action.priority]} rounded-2xl p-4 shadow-md min-w-[80px] group-hover:scale-110 transition-transform duration-200`}>
+                            <div className={`relative bg-gradient-to-br ${priorityGradients[action.priority]} rounded-2xl p-4 shadow-md min-w-[80px] group-hover:scale-110 transition-transform duration-300`}>
                                 <div className="text-center">
-                                    <Sparkles className="w-4 h-4 text-white mx-auto mb-1" />
+                                    <Sparkles className="w-4 h-4 text-white mx-auto mb-1 group-hover:rotate-12 transition-transform duration-300" />
                                     <div className="text-2xl font-bold text-white">
                                         {points}
                                     </div>
