@@ -135,19 +135,6 @@ export function CallWizard({ action }: { action: Action }) {
         return date;
     };
 
-    if (showSuccess) {
-        return (
-            <div className="flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in duration-500">
-                <div className="relative">
-                    <CheckCircle2 className="w-24 h-24 text-emerald-500 animate-in zoom-in duration-300" />
-                    <Sparkles className="w-8 h-8 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-800 mt-6">Perfect!</h3>
-                <p className="text-gray-600 mt-2">Loading next action...</p>
-            </div>
-        );
-    }
-
     return (
         <>
             <Confetti active={showConfetti} />
@@ -159,6 +146,16 @@ export function CallWizard({ action }: { action: Action }) {
                 onClose={() => setShowLevelUp(false)}
             />
 
+            {showSuccess ? (
+                <div className="flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in duration-500">
+                    <div className="relative">
+                        <CheckCircle2 className="w-24 h-24 text-emerald-500 animate-in zoom-in duration-300" />
+                        <Sparkles className="w-8 h-8 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-800 mt-6">Perfect!</h3>
+                    <p className="text-gray-600 mt-2">Loading next action...</p>
+                </div>
+            ) : (
             <div className="w-full max-w-3xl mx-auto">
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-3">
@@ -525,6 +522,7 @@ export function CallWizard({ action }: { action: Action }) {
                 )}
             </div>
         </div>
+            )}
         </>
     );
 }
