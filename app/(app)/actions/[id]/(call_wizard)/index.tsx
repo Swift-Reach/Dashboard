@@ -69,17 +69,6 @@ export function CallWizard({ action }: { action: Action }) {
                 setTimeout(() => {
                     setShowLevelUp(true);
                 }, 2200);
-
-                setTimeout(async () => {
-                    try {
-                        const res = await api.get("/self/actions/next");
-                        const newAction: Action = { ...res.data, due: new Date(res.data.due) };
-                        router.push(`/actions/${newAction.id}`);
-                    } catch (e) {
-                        if (!(e instanceof AxiosError)) console.error("Failed to fetch next action", e);
-                        router.push(`/actions`);
-                    }
-                }, 7200);
             } else {
                 setTimeout(async () => {
                     try {
@@ -143,7 +132,17 @@ export function CallWizard({ action }: { action: Action }) {
                 oldLevel={oldLevel}
                 newLevel={newLevel}
                 show={showLevelUp}
-                onClose={() => setShowLevelUp(false)}
+                onClose={async () => {
+                    setShowLevelUp(false);
+                    try {
+                        const res = await api.get("/self/actions/next");
+                        const newAction: Action = { ...res.data, due: new Date(res.data.due) };
+                        router.push(`/actions/${newAction.id}`);
+                    } catch (e) {
+                        if (!(e instanceof AxiosError)) console.error("Failed to fetch next action", e);
+                        router.push(`/actions`);
+                    }
+                }}
             />
 
             {showSuccess ? (
