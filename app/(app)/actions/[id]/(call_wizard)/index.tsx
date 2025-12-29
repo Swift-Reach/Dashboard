@@ -8,6 +8,9 @@ import { CalendarPicker } from "./(components)/CalendarPicker";
 import { NotesInput } from "./(components)/NotesInput";
 import { adjustForWeekend } from "@/lib/utils";
 import { WizardStage, STAGE_INFO } from "./(components)/constants";
+import { Confetti } from "@/app/(app)/(components)/Confetti";
+import { FloatingPoints } from "@/app/(app)/(components)/FloatingPoints";
+import { LevelUpModal } from "@/app/(app)/(components)/LevelUpModal";
 
 export function CallWizard({ action }: { action: Action }) {
     const router = useRouter();
@@ -24,9 +27,22 @@ export function CallWizard({ action }: { action: Action }) {
     const [appointmentNote, setAppointmentNote] = useState<string>('');
     const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
 
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [showFloatingPoints, setShowFloatingPoints] = useState(false);
+    const [earnedPoints, setEarnedPoints] = useState(0);
+    const [showLevelUp, setShowLevelUp] = useState(false);
+    const [oldLevel, setOldLevel] = useState(0);
+    const [newLevel, setNewLevel] = useState(0);
+
     const handleComplete = async (result: string, scheduledDate?: Date, note?: string) => {
         setIsLoading(true);
         try {
+            const userBeforeRes = await api.get("/self");
+            const userBefore = userBeforeRes.data;
+            const levelBefore = userBefore.level || 0;
+
+            const points = {'Appointment': 10, 'Call': 5, 'Email': 3}[action.type] * {'High': 5, 'Medium': 2, 'Low': 1}[action.priority];
+
             const payload: { result: string; scheduledDate?: string; note?: string } = { result };
             if (scheduledDate) {
                 payload.scheduledDate = scheduledDate.toISOString();
@@ -34,19 +50,48 @@ export function CallWizard({ action }: { action: Action }) {
             if (note) {
                 payload.note = note;
             }
-            await api.post(`/actions/${action.id}/finish`, payload);
-            setShowSuccess(true);
+            const finishRes = await api.post(`/actions/${action.id}/finish`, payload);
+            const { level: levelAfter } = finishRes.data;
 
-            setTimeout(async () => {
-                try {
-                    const res = await api.get("/self/actions/next");
-                    const newAction: Action = { ...res.data, due: new Date(res.data.due) };
-                    router.push(`/actions/${newAction.id}`);
-                } catch (e) {
-                    if (!(e instanceof AxiosError)) console.error("Failed to fetch next action", e);
-                    router.push(`/actions`);
-                }
-            }, 800);
+            setShowSuccess(true);
+            setShowConfetti(true);
+            setEarnedPoints(points);
+
+            setTimeout(() => {
+                setShowFloatingPoints(true);
+            }, 200);
+
+            const didLevelUp = levelAfter > levelBefore;
+
+            if (didLevelUp) {
+                setOldLevel(levelBefore);
+                setNewLevel(levelAfter);
+                setTimeout(() => {
+                    setShowLevelUp(true);
+                }, 2200);
+
+                setTimeout(async () => {
+                    try {
+                        const res = await api.get("/self/actions/next");
+                        const newAction: Action = { ...res.data, due: new Date(res.data.due) };
+                        router.push(`/actions/${newAction.id}`);
+                    } catch (e) {
+                        if (!(e instanceof AxiosError)) console.error("Failed to fetch next action", e);
+                        router.push(`/actions`);
+                    }
+                }, 7200);
+            } else {
+                setTimeout(async () => {
+                    try {
+                        const res = await api.get("/self/actions/next");
+                        const newAction: Action = { ...res.data, due: new Date(res.data.due) };
+                        router.push(`/actions/${newAction.id}`);
+                    } catch (e) {
+                        if (!(e instanceof AxiosError)) console.error("Failed to fetch next action", e);
+                        router.push(`/actions`);
+                    }
+                }, 2200);
+            }
         } catch (e) {
             if (!(e instanceof AxiosError)) console.error("Failed to finish action", e);
             router.push(`/actions`);
@@ -104,21 +149,31 @@ export function CallWizard({ action }: { action: Action }) {
     }
 
     return (
-        <div className="w-full max-w-3xl mx-auto">
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-2xl font-bold text-gray-800">{STAGE_INFO[stage].title}</h2>
-                    <span className="text-sm font-medium text-gray-500">
-                        Step {STAGE_INFO[stage].step} of {STAGE_INFO[stage].total}
-                    </span>
+        <>
+            <Confetti active={showConfetti} />
+            <FloatingPoints points={earnedPoints} active={showFloatingPoints} />
+            <LevelUpModal
+                oldLevel={oldLevel}
+                newLevel={newLevel}
+                show={showLevelUp}
+                onClose={() => setShowLevelUp(false)}
+            />
+
+            <div className="w-full max-w-3xl mx-auto">
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-2xl font-bold text-gray-800">{STAGE_INFO[stage].title}</h2>
+                        <span className="text-sm font-medium text-gray-500">
+                            Step {STAGE_INFO[stage].step} of {STAGE_INFO[stage].total}
+                        </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                            className="bg-linear-to-r from-blue-500 to-cyan-500 h-full transition-all duration-500 ease-out"
+                            style={{ width: `${(STAGE_INFO[stage].step / STAGE_INFO[stage].total) * 100}%` }}
+                        />
+                    </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div
-                        className="bg-linear-to-r from-blue-500 to-cyan-500 h-full transition-all duration-500 ease-out"
-                        style={{ width: `${(STAGE_INFO[stage].step / STAGE_INFO[stage].total) * 100}%` }}
-                    />
-                </div>
-            </div>
 
             {canGoBack && !isLoading && (
                 <button
@@ -470,5 +525,6 @@ export function CallWizard({ action }: { action: Action }) {
                 )}
             </div>
         </div>
+        </>
     );
 }

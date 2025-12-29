@@ -26,4 +26,6 @@ interface User {
     id: number;
     name: string;
     email: string;
+    level?: number;
+    score?: number;
 }
