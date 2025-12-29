@@ -37,7 +37,7 @@ export function CallWizard({ action }: { action: Action }) {
     const handleComplete = async (result: string, scheduledDate?: Date, note?: string) => {
         setIsLoading(true);
         try {
-            const userBeforeRes = await api.get("/self");
+            const userBeforeRes = await api.get("/self/stats/level");
             const userBefore = userBeforeRes.data;
             const levelBefore = userBefore.level || 0;
 
